@@ -4,6 +4,7 @@ import {
   Pagination,
   Select,
   TextField,
+  styled,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { useRef, useState } from "react";
@@ -19,6 +20,7 @@ function SearchPage() {
   const [movie, setMovie] = useState<NameGetResponse>();
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
+
   const handleKeyPress = (event: { key: string }) => {
     if (event.key === "Enter") {
       console.log("Enter");
@@ -26,6 +28,11 @@ function SearchPage() {
   };
   let numpage = 0;
 
+  const StyledPagination = styled(Pagination)({
+    "& .MuiPaginationItem-root": {
+      color: "#fff",
+    },
+  });
   return (
     <>
       <div className="mt-10 justify-center flex">
@@ -78,9 +85,13 @@ function SearchPage() {
           <div className="flex flex-col">
             <div className="relative group">
               <img
-                src={moviedata.Poster}
+                src={
+                  moviedata.Poster.match("N/A")
+                    ? "https://webdesigns.com.ng/wp-content/uploads/browse-website-without-images.webp"
+                    : moviedata.Poster
+                }
                 alt={moviedata.Title}
-                className="w-full h-96 object-cover rounded-3xl  group-hover:scale-105 hover:border-4"
+                className="h-80 w-full object-cover rounded-3xl group-hover:scale-105 hover:shadow-md hover:shadow-white"
                 onClick={() => {
                   navigate(`/movie/${moviedata.imdbID}`);
                 }}
@@ -93,29 +104,35 @@ function SearchPage() {
         </div>
       ) : movie != null ? (
         <div className="flex items-center justify-center mt-5">
-          <div className="flex flex-col ">
+          <div className="flex flex-col justify-center items-center">
             <h2 className="text-2xl text-center">
               TotalResults: {movie.totalResults}
             </h2>
 
-            <div className="m-10 grid grid-cols-5 gap-5">
+            <div className="h-full mt-5 grid grid-cols-[repeat(5,200px)] gap-4">
               {movie.Search.map((m) => (
-                <div className="relative group">
+                <div className="relative group w-full">
                   <img
-                    src={m.Poster}
+                    src={
+                      m.Poster.match("N/A")
+                        ? "https://webdesigns.com.ng/wp-content/uploads/browse-website-without-images.webp"
+                        : m.Poster
+                    }
                     alt={m.Title}
-                    className="w-full h-96 object-cover rounded-3xl  group-hover:scale-105 hover:border-4"
+                    className="h-80 w-full object-cover rounded-3xl group-hover:scale-105 hover:shadow-md hover:shadow-white"
                     onClick={() => {
                       navigate(`/movie/${m.imdbID}`);
                     }}
                   />
                   <h2 className="mt-5 text-center text-white font-bold bg-opacity-75 p-2 invisible group-hover:visible ">
-                    {m.Title}
+                    {m.Title.length > 11
+                      ? m.Title.slice(0, 34).concat("...")
+                      : m.Title}
                   </h2>
                 </div>
               ))}
             </div>
-            <Pagination
+            <StyledPagination
               className="flex justify-center pb-9 "
               count={Math.round(Number(movie.totalResults) / 10)}
               color="secondary"
@@ -159,7 +176,7 @@ function SearchPage() {
   async function getMovieBySomeName(input: string, pagenumber: number) {
     const res = await movieService.getMovieSomeName(input, pagenumber);
     setMovie(res);
-
+    setData(undefined);
     console.log(res);
   }
   async function getMovieByID(input: string) {
